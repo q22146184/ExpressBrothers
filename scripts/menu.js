@@ -252,6 +252,10 @@
             });
         });
         $(document).ready(function(){
+          // $('#hd1').click(function () {
+          //   $(this).parent().children('ul.tree').toggle(300);
+          //   console.log("type clicked");
+          // });
           $("#hmart").click(function(){
             $(".navList").removeClass("active");
             $("#hmartNavList").addClass("active");
