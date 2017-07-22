@@ -21,7 +21,7 @@
   
   firebase.auth().onAuthStateChanged(firebaseUser => {
     if(firebaseUser) {
-        var currMart = "costco";
+        var currMart = "hmart";
         var currItem = "";
         var currPrice = 0;
         var currQtt = 1;
@@ -77,6 +77,103 @@
             window.location = "../checkout/index.html#" + this.id;
         });
 
+        $("#search-input").keypress(function(e) {
+            if(e.which == 13) {
+                var srchCtt = $("#search-input").val();
+                hmartRef.once('value').then(function(snapshot) {
+                  console.log("reading from costco");
+                  currMart = "hmart";
+                  items.innerHTML ="";
+                  //console.log(snapshot);
+                  snapshot.forEach(function(item) {
+                    var key = item.key;
+                    var data = item.val();
+                    if (data.name.toLowerCase().includes(srchCtt.toLowerCase())) {
+                      items.innerHTML+=
+                      "<div class='col-sm-3'>" +
+                      "<div class='panel panel-default'>" +
+                      "<div class='panel-body'>" +
+                      "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
+                      "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
+                      "<button class='buyBtn' id='hmart--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                      "</div></div></div>";
+                    }
+                  });
+                  $(".buyBtn").click(function() {
+                      //console.log($(this).attr("id"));
+                      var itemName = $(this).attr("id").split("--");
+                      //console.log(itemName[1]);
+                      //console.log(snapshot.child("pork/id").val());
+                      var name = snapshot.child(itemName[1] + "/name").val();
+                      var pic = snapshot.child(itemName[1] + "/pic").val();
+                      var price = snapshot.child(itemName[1] + "/price").val().toFixed(2);
+                      var unit = snapshot.child(itemName[1] + "/unit").val();
+                      currItem  = name;
+                      currPrice  = price;
+                      currTotal = price;
+                      currName = name;
+                      currPic = pic;
+                          //console.log(name + pic + price + unit);
+                      $("#buy-header").html("<h4 class='modal-title'>Buy " + name + " from H-mart</h4>");
+                      document.getElementById("buy-content").innerHTML = 
+                      "<center><img src=" + pic + " style='width:500px;height:400px;padding-top=200px'></center>" +
+                      "<center><h3>Buy " + name + " at $" + price + " per " + unit + ".</h3></center>" +
+                      "<label style='padding-left:25px;padding-right:10px;font-size:120%;'>Select quantity:</label>" + 
+                      "<input id='qtt' min='1' type='number' size='20' id='numberinput' name='Buy quantity' value='1' style='width:40px;'/>" + 
+                      "<label id='total' style='float:right;padding-right:25px;font-size:120%;'>Total Price: $" + price + "</label>";    
+                  });
+              });
+            }
+        });
+
+        $('body').on('click', '#search-button', function() {
+            //console.log(this.id);
+            var srchCtt = $("#search-input").val();
+            hmartRef.once('value').then(function(snapshot) {
+              console.log("reading from costco");
+              currMart = "hmart";
+              items.innerHTML ="";
+              //console.log(snapshot);
+              snapshot.forEach(function(item) {
+                var key = item.key;
+                var data = item.val();
+                if (data.name.toLowerCase().includes(srchCtt.toLowerCase())) {
+                  items.innerHTML+=
+                  "<div class='col-sm-3'>" +
+                  "<div class='panel panel-default'>" +
+                  "<div class='panel-body'>" +
+                  "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
+                  "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
+                  "<button class='buyBtn' id='hmart--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                  "</div></div></div>";
+                }
+              });
+              $(".buyBtn").click(function() {
+                  //console.log($(this).attr("id"));
+                  var itemName = $(this).attr("id").split("--");
+                  //console.log(itemName[1]);
+                  //console.log(snapshot.child("pork/id").val());
+                  var name = snapshot.child(itemName[1] + "/name").val();
+                  var pic = snapshot.child(itemName[1] + "/pic").val();
+                  var price = snapshot.child(itemName[1] + "/price").val().toFixed(2);
+                  var unit = snapshot.child(itemName[1] + "/unit").val();
+                  currItem  = name;
+                  currPrice  = price;
+                  currTotal = price;
+                  currName = name;
+                  currPic = pic;
+                      //console.log(name + pic + price + unit);
+                  $("#buy-header").html("<h4 class='modal-title'>Buy " + name + " from H-mart</h4>");
+                  document.getElementById("buy-content").innerHTML = 
+                  "<center><img src=" + pic + " style='width:500px;height:400px;padding-top=200px'></center>" +
+                  "<center><h3>Buy " + name + " at $" + price + " per " + unit + ".</h3></center>" +
+                  "<label style='padding-left:25px;padding-right:10px;font-size:120%;'>Select quantity:</label>" + 
+                  "<input id='qtt' min='1' type='number' size='20' id='numberinput' name='Buy quantity' value='1' style='width:40px;'/>" + 
+                  "<label id='total' style='float:right;padding-right:25px;font-size:120%;'>Total Price: $" + price + "</label>";    
+              });
+          });
+        });
+
         $('body').on('click', '.type-tabs', function() {
             var t = this.id.split("-")[1];
             console.log(t);
@@ -98,13 +195,13 @@
                         "<div class='panel-body'>" +
                         "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
                         "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
-                        "<button class='buyBtn' id='costco-" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                        "<button class='buyBtn' id='costco--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
                         "</div></div></div>";
                     }
                 });
                 $(".buyBtn").click(function() {
                     //console.log($(this).attr("id"));
-                    var itemName = $(this).attr("id").split("-");
+                    var itemName = $(this).attr("id").split("--");
                     //console.log(itemName[1]);
                     //console.log(snapshot.child("pork/id").val());
                     var name = snapshot.child(itemName[1] + "/name").val();
@@ -127,6 +224,11 @@
                 });
             });
         });
+
+        $('body').on('click', "label.tree-toggler", function() {
+          console.log("clicked");
+          $(this).parent().children('ul.tree').toggle(300);
+        })
 
         $('body').on('click', '#logout-btn', function() {
             //console.log(this.id);
@@ -202,15 +304,43 @@
 
       var typeRef = firebase.database().ref("type");
       typeRef.once("value", function(snapshot) {
+        // var stack = [];
+        // stack.push(snapshot);
+        // while (stack.length != 0) {
+        //   var tempType = stack.pop();
+          
+        // }
+        var firstTime = true;
         snapshot.forEach(function(type) {
-            console.log(type.val());
-            $("#type-bar").append('<li><a style="color:black;" class="type-tabs" id="type-' + type.val() + '"">' + type.val() + '</a></li>');
+            var typeVal = type.val();
+            var typeKey = type.key;
+            var stack = [];
+            stack.push(type);
+            if (typeKey == typeVal) {
+              console.log("value is " + typeVal + " and key is " + typeKey);
+              if (!firstTime) {
+                $("#tree-menu").append('<li class="divider"></li>');
+              }
+              $("#tree-menu").append('<li><label class="tree-toggler type-tabs nav-header" id="type-' + typeVal + '">' + typeVal+ '</label></li>');
+              firstTime = false;
+            } else {
+              if (!firstTime) {
+                $("#tree-menu").append('<li class="divider"></li>');
+              }
+              $("#tree-menu").append('<li id="list1-' + typeKey + '"><label class="tree-toggler nav-header">' + typeKey+ '</label></li>');
+              $("#list1-" + typeKey).append('<ul id="list-' + typeKey + '"class="nav nav-list tree"></ul>');
+              type.forEach(function(type2) {
+                $("#list-" + typeKey).append('<li><a class="type-tabs" id="type-' + type2.val() + '">' + type2.val() + '</a></li>');
+              });
+              firstTime = false;
+            }
+            //$("#type-bar").append('<li><a style="color:black;" class="type-tabs" id="type-' + type.val() + '"">' + type.val() + '</a></li>');
         });   
       });
 
-      costcoRef.once('value').then(function(snapshot) {
+      hmartRef.once('value').then(function(snapshot) {
             console.log("reading from costco");
-            currMart = "costco";
+            currMart = "hmart";
             items.innerHTML ="";
             //console.log(snapshot);
             snapshot.forEach(function(item) {
@@ -224,17 +354,17 @@
                 "<div class='panel-body'>" +
                 "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
                 "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
-                "<button class='buyBtn' id='costco-" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                "<button class='buyBtn' id='costco--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
                 "</div></div></div>";
             });
             $(".buyBtn").click(function() {
                 //console.log($(this).attr("id"));
-                var itemName = $(this).attr("id").split("-");
+                var itemName = $(this).attr("id").split("--");
                 //console.log(itemName[1]);
                 //console.log(snapshot.child("pork/id").val());
                 var name = snapshot.child(itemName[1] + "/name").val();
                 var pic = snapshot.child(itemName[1] + "/pic").val();
-                var price = snapshot.child(itemName[1] + "/price").val().toFixed(2);
+                var price = snapshot.child(itemName[1] + "/price").val();
                 var unit = snapshot.child(itemName[1] + "/unit").val();
                 currItem  = name;
                 currPrice  = price;
@@ -275,12 +405,12 @@
                       "<div class='panel-body'>" +
                       "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
                       "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
-                      "<button class='buyBtn' id='hmart-" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                      "<button class='buyBtn' id='hmart--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
                       "</div></div></div>";
                   });
                   $(".buyBtn").click(function() {
                       //console.log($(this).attr("id"));
-                      var itemName = $(this).attr("id").split("-");
+                      var itemName = $(this).attr("id").split("--");
                       //console.log(itemName[1]);
                       //console.log(snapshot.child("pork/id").val());
                       var name = snapshot.child(itemName[1] + "/name").val();
@@ -323,12 +453,12 @@
                       "<div class='panel-body'>" +
                       "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
                       "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
-                      "<button class='buyBtn' id='publix-" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                      "<button class='buyBtn' id='publix--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
                       "</div></div></div>";
                   });
                   $(".buyBtn").click(function() {
                       //console.log($(this).attr("id"));
-                      var itemName = $(this).attr("id").split("-");
+                      var itemName = $(this).attr("id").split("--");
                       //console.log(itemName[1]);
                       //console.log(snapshot.child("pork/id").val());
                       var name = snapshot.child(itemName[1] + "/name").val();
@@ -373,12 +503,12 @@
                       "<div class='panel-body'>" +
                       "<center><img src=" + data.pic + " style='min-height:235px;max-width:100%;width:auto;height:auto;'></center>" +
                       "<h3>$" + data.price + "</h3><p>" + data.name.charAt(0).toUpperCase() + data.name.slice(1) + "</p>"+
-                      "<button class='buyBtn' id='costco-" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
+                      "<button class='buyBtn' id='costco--" + data.name + "' data-toggle='modal' data-target='#myModal'>Buy now</button>" +
                       "</div></div></div>";
                   });
                   $(".buyBtn").click(function() {
                       console.log($(this).attr("id"));
-                      var itemName = $(this).attr("id").split("-");
+                      var itemName = $(this).attr("id").split("--");
                       // console.log(itemName[1]);
                       // console.log(snapshot.child("pork/id").val());
                       var name = snapshot.child(itemName[1] + "/name").val();
